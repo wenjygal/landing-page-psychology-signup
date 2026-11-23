@@ -86,7 +86,7 @@
       <label for="fn">שם</label>
       <input id="fn" name="FULL_NAME" type="text" autocomplete="name" maxlength="200" required aria-describedby="email-err">
     </div>
-    <label class="consent"><input id="optin" type="checkbox" required aria-describedby="email-err"> <span>אני רוצה לקבל מ-BOOST ME מיילים על הדרכות והקלטות</span></label>
+    <label class="consent"><input id="optin" type="checkbox" aria-required="true" aria-describedby="email-err"> <span>אני רוצה לקבל מ-BOOST ME מיילים על הדרכות והקלטות</span></label>
     <div class="hp" aria-hidden="true">
       <label for="website">אתר</label>
       <input id="website" name="email_address_check" type="text" tabindex="-1" autocomplete="off">
@@ -143,10 +143,10 @@
   f.addEventListener('submit',function(e){
     e.preventDefault();err.hidden=true;em.removeAttribute('aria-invalid');
     var v=em.value.trim();
-    var fn=document.getElementById('fn'),oi=document.getElementById('optin');fn.removeAttribute('aria-invalid');
+    var fn=document.getElementById('fn'),oi=document.getElementById('optin');fn.removeAttribute('aria-invalid');oi.removeAttribute('aria-invalid');
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){em.setAttribute('aria-invalid','true');show('צריך כתובת מייל מלאה, למשל name@gmail.com');em.focus();return}
     if(!fn.value.trim()){fn.setAttribute('aria-invalid','true');show('חסר שם, כדי שנדע איך לפנות אליכם במייל.');fn.focus();return}
-    if(!oi.checked){show('צריך לסמן את התיבה, אחרת אסור לנו לשלוח לך מיילים.');oi.focus();return}
+    if(!oi.checked){oi.setAttribute('aria-invalid','true');show('צריך לסמן את התיבה, אחרת אסור לנו לשלוח לך מיילים.');oi.focus();return}
     go.disabled=true;go.textContent='שולחת...';
     var fd=new FormData();fd.append('EMAIL',v);fd.append('FULL_NAME',fn.value.trim());fd.append('OPT_IN','1');fd.append('email_address_check',document.getElementById('website').value);fd.append('locale','he');
     fetch(HOOK,{method:'POST',body:fd})
