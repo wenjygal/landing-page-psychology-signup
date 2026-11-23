@@ -39,6 +39,8 @@
   input:focus{border-color:var(--magenta-deep);outline:none}
   input:focus-visible{outline:3px solid var(--magenta-deep);outline-offset:2px}
   input[aria-invalid=true]{border-color:var(--err)}
+  .consent{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;cursor:pointer}
+  .consent input{width:20px;height:20px;margin:3px 0 0;flex:none;accent-color:var(--magenta-deep)}
   .hp,.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
   .btn{display:inline-flex;justify-content:center;align-items:center;gap:.6rem;width:100%;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:1.0625rem;line-height:1;padding:1.05rem 1.6rem;min-height:52px;border-radius:999px;background:var(--magenta);color:#fff;transition:transform .3s cubic-bezier(.16,1,.3,1),background-color .2s}
   .btn:hover{background:#cb0f7e;transform:translateY(-2px)}
@@ -81,12 +83,13 @@
       <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby="email-err">
     </div>
     <div>
-      <label for="fn">שם פרטי <span class="opt">(לא חובה)</span></label>
-      <input id="fn" name="firstName" type="text" autocomplete="given-name" maxlength="60">
+      <label for="fn">שם</label>
+      <input id="fn" name="FULL_NAME" type="text" autocomplete="name" maxlength="200" required aria-describedby="email-err">
     </div>
+    <label class="consent"><input id="optin" type="checkbox" required aria-describedby="email-err"> <span>אני רוצה לקבל מ-BOOST ME מיילים על הדרכות והקלטות</span></label>
     <div class="hp" aria-hidden="true">
       <label for="website">אתר</label>
-      <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      <input id="website" name="email_address_check" type="text" tabindex="-1" autocomplete="off">
     </div>
     <button class="btn" id="go" type="submit">עדכנו אותי</button>
     <p class="msg err" id="email-err" role="alert" hidden></p>
@@ -110,9 +113,9 @@
   <h2 id="dlg-privacy-t">מדיניות פרטיות</h2>
   <p>העמוד מופעל על ידי גל אפרתי (BOOST ME), בהתאם לחוק הגנת הפרטיות, התשמ"א-1981, לרבות תיקון מס' 13.</p>
   <h3>מה נאסף</h3>
-  <p>כתובת מייל, ואם מילאתם גם שם פרטי. אין בעמוד כלי מדידה או עוגיות. העמוד מאוחסן ב-GitHub Pages והגופן נטען מ-Google Fonts, ולכן כתובת ה-IP שלכם מגיעה לשירותים האלה.</p>
+  <p>כתובת מייל, שם, והסכמה לקבל מאיתנו מיילים. אין בעמוד כלי מדידה או עוגיות. העמוד מאוחסן ב-GitHub Pages והגופן נטען מ-Google Fonts, ולכן כתובת ה-IP שלכם מגיעה לשירותים האלה.</p>
   <h3>לאן זה הולך</h3>
-  <p>הפרטים עוברים דרך שרת האוטומציה שלנו לרשימת התפוצה שלנו ב-Brevo, ספק שירותי מייל שפועל מחוץ לישראל.</p>
+  <p>המייל נשמר ברשימת התפוצה שלנו ב-Brevo, ספק שירותי מייל שפועל מחוץ לישראל.</p>
   <h3>למה</h3>
   <p>רק כדי לשלוח לכם את ההקלטה כשהיא עולה ליוטיוב והזמנות להדרכות הבאות. לא נמכור את הפרטים ולא נעביר אותם לאחרים.</p>
   <h3>הזכויות שלכם</h3>
@@ -133,16 +136,22 @@
 
 <script>
 (function(){
-  var HOOK='https://wn8n.uppercut.tech/webhook/training-updates-signup';
+  var HOOK='https://952b7ccc.sibforms.com/v2/serve/MUIFADOPmKf06Wbxz5zybkbhmynp6BkCRywBzx2Fzv1_gPz4oQQBGsqjXvWK1Y4NfoC7QmMwr8x2A2_7fwTaKEc2XmCWvwmVmhnbmAOBqR2tkOSgfUm_B_NGre77dimlXZnWGmQ3rro8GAWvam0p1uMM_gtvx2ZT5ErsBDhedNLjWNWlc2btatmAhjQuBhGND3EeE9VM1ajgbayi?isAjax=1';
   var f=document.getElementById('f'),em=document.getElementById('email'),err=document.getElementById('email-err'),go=document.getElementById('go');
   function show(t){err.textContent=t;err.hidden=false}
+  f.addEventListener('input',function(){err.hidden=true});
   f.addEventListener('submit',function(e){
     e.preventDefault();err.hidden=true;em.removeAttribute('aria-invalid');
     var v=em.value.trim();
+    var fn=document.getElementById('fn'),oi=document.getElementById('optin');fn.removeAttribute('aria-invalid');
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){em.setAttribute('aria-invalid','true');show('צריך כתובת מייל מלאה, למשל name@gmail.com');em.focus();return}
+    if(!fn.value.trim()){fn.setAttribute('aria-invalid','true');show('חסר שם, כדי שנדע איך לפנות אליכם במייל.');fn.focus();return}
+    if(!oi.checked){show('צריך לסמן את התיבה, אחרת אסור לנו לשלוח לך מיילים.');oi.focus();return}
     go.disabled=true;go.textContent='שולחת...';
-    fetch(HOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:v,firstName:document.getElementById('fn').value.trim(),website:document.getElementById('website').value,source:'recording-closed'})})
-      .then(function(r){if(!r.ok)throw 0;location.href='updates.html'})
+    var fd=new FormData();fd.append('EMAIL',v);fd.append('FULL_NAME',fn.value.trim());fd.append('OPT_IN','1');fd.append('email_address_check',document.getElementById('website').value);fd.append('locale','he');
+    fetch(HOOK,{method:'POST',body:fd})
+      .then(function(r){if(!r.ok)throw 0;return r.json()})
+      .then(function(j){if(!j||!j.success)throw 0;location.href='updates.html'})
       .catch(function(){go.disabled=false;go.textContent='עדכנו אותי';show('משהו לא עבד אצלנו. אפשר לנסות שוב, או לכתוב ל-boost@boost-me.digital ונוסיף אתכם ידנית.')});
   });
   document.querySelectorAll('[data-dialog]').forEach(function(b){
